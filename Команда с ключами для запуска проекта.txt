@@ -1,1 +1,0 @@
-python C:\Users\User\Desktop\ДЗ_ИНФА\Конфиг\Config_Homework_2\Main.py --plantuml-path C:\Users\User\Desktop\ДЗ_ИНФА\Конфиг\Config_Homework_2\plantuml.bat --package bash --output C:\Users\User\Desktop\ДЗ_ИНФА\Конфиг\Config_Homework_2\result.png

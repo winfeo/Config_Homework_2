@@ -1,70 +1,81 @@
-import networkx as nx
-import os
-import argparse
 import subprocess
+import sys
+import os
 
-def get_dependencies(package_name):
-    """Получение зависимостей пакета."""
-    result = subprocess.run(['apk', 'info', '--depends', package_name], capture_output=True, text=True)
-    if result.returncode != 0:
-        raise Exception(f"Failed to get dependencies for {package_name}: {result.stderr}")
-    dependencies = result.stdout.strip().split('\n')
-    return [dep.split(' ')[0] for dep in dependencies]
 
-def build_dependency_graph(package_name):
-    """Построение графа зависимостей."""
-    G = nx.DiGraph()
-    stack = [package_name]
-    visited = set()
+def get_dependencies(package_name, dependencies=None):
+    """Рекурсивно получает все зависимости для указанного пакета."""
+    if dependencies is None:
+        dependencies = set()
 
-    while stack:
-        current = stack.pop()
-        if current in visited:
-            continue
-        visited.add(current)
-        dependencies = get_dependencies(current)
+    try:
+        # Получение списка зависимостей для пакета
+        output = subprocess.check_output(["apk", "info", "-R", package_name], text=True)
+        lines = output.strip().split("\n")
+
+        # Пропускаем первую строку, так как это название пакета
+        for line in lines[1:]:
+            dep = line.strip()
+
+            # Пропуск строк, не являющихся именами пакетов
+            if dep.endswith("depends on:") or not dep:
+                continue
+
+            if dep not in dependencies:
+                dependencies.add(dep)
+                # Рекурсивно получаем зависимости для текущей зависимости
+                get_dependencies(dep, dependencies)
+    except subprocess.CalledProcessError as e:
+        print(f"Ошибка получения зависимостей для пакета {package_name}: {e}")
+        sys.exit(1)
+
+    return dependencies
+
+
+def generate_plantuml(package_name, dependencies, output_file):
+    """Генерирует файл PlantUML для визуализации зависимостей."""
+    with open(output_file, "w") as f:
+        f.write("@startuml\n")
+        f.write(f'[{package_name}]\n')
+
         for dep in dependencies:
-            G.add_edge(current, dep)
-            if dep not in visited:
-                stack.append(dep)
+            f.write(f'[{package_name}] --> [{dep}]\n')
 
-    return G
+        f.write("@enduml\n")
 
-def generate_plantuml(graph):
-    """Генерация PlantUML из графа."""
-    plantuml = "@startuml\n"
-    for node in graph.nodes:
-        plantuml += f"package {node} {{\n}}\n"
-    for edge in graph.edges:
-        plantuml += f"{edge[0]} --> {edge[1]}\n"
-    plantuml += "@enduml\n"
-    return plantuml
 
-def save_plantuml_to_png(plantuml, output_file, plantuml_path):
-    """Сохранение PlantUML в PNG."""
-    with open("temp.puml", "w") as f:
-        f.write(plantuml)
-    subprocess.run([plantuml_path, 'temp.puml'], check=True)
-    os.rename("temp.png", output_file)
-    os.remove("temp.puml")
+def visualize_graph(plantuml_path, uml_file, output_image):
+    """Запускает внешнюю программу для генерации изображения графа."""
+    try:
+        subprocess.check_call([plantuml_path, "-tpng", uml_file, "-o", os.path.dirname(output_image)])
+        print(f"Граф зависимостей сохранен в файл: {output_image}")
+    except subprocess.CalledProcessError as e:
+        print(f"Ошибка при генерации изображения: {e}")
+        sys.exit(1)
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Visualize Alpine Linux package dependencies.")
-    parser.add_argument('--plantuml-path', required=True, help="Path to the PlantUML executable.")
-    parser.add_argument('--package', required=True, help="Name of the package to analyze.")
-    parser.add_argument('--output', required=True, help="Path to save the dependency graph image.")
-    args = parser.parse_args()
+    if len(sys.argv) != 4:
+        print("Использование: python script.py <path_to_plantuml> <package_name> <output_image>")
+        sys.exit(1)
 
-    # Строим граф зависимостей
-    graph = build_dependency_graph(args.package)
+    plantuml_path = sys.argv[1]
+    package_name = sys.argv[2]
+    output_image = sys.argv[3]
+    uml_file = "dependencies.puml"
 
-    # Генерируем PlantUML
-    plantuml = generate_plantuml(graph)
+    # Получение зависимостей
+    dependencies = get_dependencies(package_name)
 
-    # Сохраняем PlantUML в PNG
-    save_plantuml_to_png(plantuml, args.output, args.plantuml_path)
+    # Генерация PlantUML файла
+    generate_plantuml(package_name, dependencies, uml_file)
 
-    print(f"Graph saved to {args.output}")
+    # Генерация изображения графа
+    visualize_graph(plantuml_path, uml_file, output_image)
+
+    # Удаление временного PlantUML файла
+    os.remove(uml_file)
+
 
 if __name__ == "__main__":
     main()

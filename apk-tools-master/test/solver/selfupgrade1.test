@@ -1,0 +1,8 @@
+@ARGS upgrade --self-upgrade-only
+@REPO selfupgrade.repo
+@INSTALLED selfupgrade1.installed
+@WORLD apk-tools application
+@EXPECT
+Upgrading critical system libraries and apk-tools:
+(1/2) Upgrading libcrypto (1 -> 2)
+(2/2) Upgrading apk-tools (1 -> 2)

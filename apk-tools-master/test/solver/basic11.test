@@ -1,0 +1,6 @@
+@ARGS --force add a broken not-in-repo
+@REPO basic.repo
+@EXPECT
+(1/2) Installing b (2)
+(2/2) Installing a (2)
+OK: 0 MiB in 2 packages
