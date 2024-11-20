@@ -1,4 +1,0 @@
-@ARGS add -t .virtual=invalid
-@INSTALLED basic.installed
-@EXPECT
-ERROR: .virtual=invalid: bad package specifier

@@ -1,8 +1,0 @@
-@ARGS upgrade --latest
-@REPO basic.repo
-@INSTALLED basic.installed
-@WORLD a<2
-@EXPECT
-ERROR: unable to select packages:
-  a-2:
-    breaks: world[a<2]

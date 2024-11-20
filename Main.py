@@ -1,81 +1,94 @@
-import subprocess
-import sys
+import argparse
 import os
+import subprocess
+from collections import defaultdict
 
+def parse_apkindex(apkindex_path):
+    """Парсит зависимости из файла APKINDEX."""
+    dependencies = defaultdict(list)
+    package = None
 
-def get_dependencies(package_name, dependencies=None):
-    """Рекурсивно получает все зависимости для указанного пакета."""
-    if dependencies is None:
-        dependencies = set()
-
-    try:
-        # Получение списка зависимостей для пакета
-        output = subprocess.check_output(["apk", "info", "-R", package_name], text=True)
-        lines = output.strip().split("\n")
-
-        # Пропускаем первую строку, так как это название пакета
-        for line in lines[1:]:
-            dep = line.strip()
-
-            # Пропуск строк, не являющихся именами пакетов
-            if dep.endswith("depends on:") or not dep:
-                continue
-
-            if dep not in dependencies:
-                dependencies.add(dep)
-                # Рекурсивно получаем зависимости для текущей зависимости
-                get_dependencies(dep, dependencies)
-    except subprocess.CalledProcessError as e:
-        print(f"Ошибка получения зависимостей для пакета {package_name}: {e}")
-        sys.exit(1)
+    with open(apkindex_path, 'r') as file:
+        for line in file:
+            line = line.strip()
+            if line.startswith('P:'):
+                package = line[2:].strip()
+            elif line.startswith('D:') and package:
+                deps = line[2:].strip().split()
+                dependencies[package].extend(dep.split('=')[0] for dep in deps)
+            elif not line:
+                package = None  # Конец записи о пакете
 
     return dependencies
 
+def resolve_dependencies(dependencies, package_name, resolved=None, seen=None):
+    """Рекурсивно разрешает все транзитивные зависимости."""
+    if resolved is None:
+        resolved = set()
+    if seen is None:
+        seen = set()
 
-def generate_plantuml(package_name, dependencies, output_file):
-    """Генерирует файл PlantUML для визуализации зависимостей."""
-    with open(output_file, "w") as f:
-        f.write("@startuml\n")
-        f.write(f'[{package_name}]\n')
+    if package_name in seen:
+        return resolved
+    seen.add(package_name)
 
-        for dep in dependencies:
-            f.write(f'[{package_name}] --> [{dep}]\n')
+    for dep in dependencies.get(package_name, []):
+        if dep not in resolved:
+            resolved.add(dep)
+            resolve_dependencies(dependencies, dep, resolved, seen)
 
-        f.write("@enduml\n")
+    return resolved
 
+def generate_plantuml_graph(package_name, dependencies):
+    """Генерирует граф в формате PlantUML."""
+    graph_lines = ["@startuml", "skinparam linetype ortho"]
+    all_dependencies = resolve_dependencies(dependencies, package_name)
 
-def visualize_graph(plantuml_path, uml_file, output_image):
-    """Запускает внешнюю программу для генерации изображения графа."""
+    graph_lines.append(f'"{package_name}" --> "{package_name}"')  # Узел пакета
+
+    for dep in all_dependencies:
+        graph_lines.append(f'"{package_name}" --> "{dep}"')
+
+    graph_lines.append("@enduml")
+    return "\n".join(graph_lines)
+
+def visualize_plantuml(plantuml_content, plantuml_path, output_file):
+    """Сохраняет граф в формате PNG с помощью PlantUML."""
+    uml_file = "temp_graph.puml"
+    with open(uml_file, 'w') as file:
+        file.write(plantuml_content)
+
     try:
-        subprocess.check_call([plantuml_path, "-tpng", uml_file, "-o", os.path.dirname(output_image)])
-        print(f"Граф зависимостей сохранен в файл: {output_image}")
-    except subprocess.CalledProcessError as e:
-        print(f"Ошибка при генерации изображения: {e}")
-        sys.exit(1)
-
+        subprocess.run([plantuml_path, uml_file, "-o", os.path.dirname(output_file)], check=True)
+        os.rename(os.path.join(os.path.dirname(uml_file), "temp_graph.png"), output_file)
+    finally:
+        os.remove(uml_file)
 
 def main():
-    if len(sys.argv) != 4:
-        print("Использование: python script.py <path_to_plantuml> <package_name> <output_image>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Генератор графов зависимости пакетов Alpine Linux.")
+    parser.add_argument("-i", "--input", required=True, help="Путь к файлу APKINDEX")
+    parser.add_argument("-p", "--package", required=True, help="Имя анализируемого пакета")
+    parser.add_argument("-v", "--visualizer", required=True, help="Путь к программе для визуализации PlantUML")
+    parser.add_argument("-o", "--output", required=True, help="Путь для сохранения графа зависимостей (PNG)")
+    args = parser.parse_args()
 
-    plantuml_path = sys.argv[1]
-    package_name = sys.argv[2]
-    output_image = sys.argv[3]
-    uml_file = "dependencies.puml"
+    if not os.path.isfile(args.input):
+        print(f"Ошибка: файл {args.input} не найден.")
+        return
 
-    # Получение зависимостей
-    dependencies = get_dependencies(package_name)
+    if not os.path.isfile(args.visualizer):
+        print(f"Ошибка: визуализатор PlantUML {args.visualizer} не найден.")
+        return
 
-    # Генерация PlantUML файла
-    generate_plantuml(package_name, dependencies, uml_file)
+    dependencies = parse_apkindex(args.input)
 
-    # Генерация изображения графа
-    visualize_graph(plantuml_path, uml_file, output_image)
+    if args.package not in dependencies:
+        print(f"Ошибка: пакет {args.package} не найден в APKINDEX.")
+        return
 
-    # Удаление временного PlantUML файла
-    os.remove(uml_file)
-
+    plantuml_content = generate_plantuml_graph(args.package, dependencies)
+    visualize_plantuml(plantuml_content, args.visualizer, args.output)
+    print(f"Граф зависимости для пакета {args.package} успешно сохранён в {args.output}")
 
 if __name__ == "__main__":
     main()

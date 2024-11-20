@@ -1,7 +1,0 @@
-src
-pkg
-*.adb
-*.apk
-*.tar.gz
-conf.mk
-
