@@ -59,10 +59,33 @@ def visualize_plantuml(plantuml_content, plantuml_path, output_file):
         file.write(plantuml_content)
 
     try:
-        subprocess.run([plantuml_path, uml_file, "-o", os.path.dirname(output_file)], check=True)
-        os.rename(os.path.join(os.path.dirname(uml_file), "temp_graph.png"), output_file)
-    finally:
-        os.remove(uml_file)
+        # Запуск команды PlantUML
+        result = subprocess.run(
+            ["java", "-jar", plantuml_path, uml_file, "-o", os.path.dirname(output_file)],
+            check=True, capture_output=True
+        )
+
+        # Вывод stdout и stderr для диагностики
+        print(f"stdout: {result.stdout.decode()}")
+        print(f"stderr: {result.stderr.decode()}")
+
+        # Проверка на создание любого PNG-файла
+        output_dir = os.path.dirname(output_file)
+        temp_png_path = None
+        for file in os.listdir(output_dir):
+            if file.endswith(".png"):
+                temp_png_path = os.path.join(output_dir, file)
+                break
+
+        if temp_png_path:
+            # Переименование созданного файла в output_file
+            os.rename(temp_png_path, output_file)
+        else:
+            print(f"Ошибка: не удалось найти PNG файл в {output_dir}.")
+    except subprocess.CalledProcessError as e:
+        print(f"Ошибка при выполнении subprocess: {e}")
+        print(f"stdout: {e.stdout.decode()}")
+        print(f"stderr: {e.stderr.decode()}")
 
 def main():
     parser = argparse.ArgumentParser(description="Генератор графов зависимости пакетов Alpine Linux.")
@@ -70,23 +93,31 @@ def main():
     parser.add_argument("-p", "--package", required=True, help="Имя анализируемого пакета")
     parser.add_argument("-v", "--visualizer", required=True, help="Путь к программе для визуализации PlantUML")
     parser.add_argument("-o", "--output", required=True, help="Путь для сохранения графа зависимостей (PNG)")
+
     args = parser.parse_args()
 
+    # Проверка наличия файла APKINDEX
     if not os.path.isfile(args.input):
         print(f"Ошибка: файл {args.input} не найден.")
         return
 
+    # Проверка наличия JAR-файла для PlantUML
     if not os.path.isfile(args.visualizer):
         print(f"Ошибка: визуализатор PlantUML {args.visualizer} не найден.")
         return
 
+    # Чтение зависимостей из APKINDEX
     dependencies = parse_apkindex(args.input)
 
+    # Проверка наличия пакета в зависимостях
     if args.package not in dependencies:
         print(f"Ошибка: пакет {args.package} не найден в APKINDEX.")
         return
 
+    # Генерация графа в формате PlantUML
     plantuml_content = generate_plantuml_graph(args.package, dependencies)
+
+    # Визуализация графа с использованием PlantUML
     visualize_plantuml(plantuml_content, args.visualizer, args.output)
     print(f"Граф зависимости для пакета {args.package} успешно сохранён в {args.output}")
 
