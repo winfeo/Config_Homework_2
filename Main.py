@@ -3,6 +3,7 @@ import os
 import subprocess
 from collections import defaultdict
 
+
 def parse_apkindex(apkindex_path):
     """Парсит зависимости из файла APKINDEX."""
     dependencies = defaultdict(list)
@@ -20,6 +21,7 @@ def parse_apkindex(apkindex_path):
                 package = None  # Конец записи о пакете
 
     return dependencies
+
 
 def resolve_dependencies(dependencies, package_name, resolved=None, seen=None):
     """Рекурсивно разрешает все транзитивные зависимости."""
@@ -39,29 +41,42 @@ def resolve_dependencies(dependencies, package_name, resolved=None, seen=None):
 
     return resolved
 
+
 def generate_plantuml_graph(package_name, dependencies):
     """Генерирует граф в формате PlantUML."""
     graph_lines = ["@startuml", "skinparam linetype ortho"]
-    all_dependencies = resolve_dependencies(dependencies, package_name)
+    seen = set()
 
-    graph_lines.append(f'"{package_name}" --> "{package_name}"')  # Узел пакета
+    def add_edges(current_package, seen):
+        if current_package in seen:
+            return
+        seen.add(current_package)
+        graph_lines.append(f'class "{current_package}" {{}}')
+        for dep in dependencies.get(current_package, []):
+            graph_lines.append(f'"{current_package}" --> "{dep}"')
+            add_edges(dep, seen)
 
-    for dep in all_dependencies:
-        graph_lines.append(f'"{package_name}" --> "{dep}"')
-
+    add_edges(package_name, seen)
     graph_lines.append("@enduml")
     return "\n".join(graph_lines)
 
+
 def visualize_plantuml(plantuml_content, plantuml_path, output_file):
     """Сохраняет граф в формате PNG с помощью PlantUML."""
-    uml_file = "temp_graph.puml"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    uml_file = os.path.join(script_dir, "temp_graph.puml")
+
+    # Удаляем старый файл, если он существует
+    if os.path.exists(uml_file):
+        os.remove(uml_file)
+
     with open(uml_file, 'w') as file:
         file.write(plantuml_content)
 
     try:
         # Запуск команды PlantUML
         result = subprocess.run(
-            ["java", "-jar", plantuml_path, uml_file, "-o", os.path.dirname(output_file)],
+            ["java", "-jar", plantuml_path, uml_file, "-o", script_dir],
             check=True, capture_output=True
         )
 
@@ -70,22 +85,22 @@ def visualize_plantuml(plantuml_content, plantuml_path, output_file):
         print(f"stderr: {result.stderr.decode()}")
 
         # Проверка на создание любого PNG-файла
-        output_dir = os.path.dirname(output_file)
         temp_png_path = None
-        for file in os.listdir(output_dir):
+        for file in os.listdir(script_dir):
             if file.endswith(".png"):
-                temp_png_path = os.path.join(output_dir, file)
+                temp_png_path = os.path.join(script_dir, file)
                 break
 
         if temp_png_path:
             # Переименование созданного файла в output_file
             os.rename(temp_png_path, output_file)
         else:
-            print(f"Ошибка: не удалось найти PNG файл в {output_dir}.")
+            print(f"Ошибка: не удалось найти PNG файл в {script_dir}.")
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при выполнении subprocess: {e}")
         print(f"stdout: {e.stdout.decode()}")
         print(f"stderr: {e.stderr.decode()}")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Генератор графов зависимости пакетов Alpine Linux.")
@@ -120,6 +135,7 @@ def main():
     # Визуализация графа с использованием PlantUML
     visualize_plantuml(plantuml_content, args.visualizer, args.output)
     print(f"Граф зависимости для пакета {args.package} успешно сохранён в {args.output}")
+
 
 if __name__ == "__main__":
     main()
