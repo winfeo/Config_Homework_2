@@ -9,7 +9,7 @@ def parse_apkindex(apkindex_path):
     dependencies = defaultdict(list)
     package = None
 
-    with open(apkindex_path, 'r') as file:
+    with open(apkindex_path, 'r', encoding='utf-8') as file:
         for line in file:
             line = line.strip()
             if line.startswith('P:'):
@@ -51,9 +51,9 @@ def generate_plantuml_graph(package_name, dependencies):
         if current_package in seen:
             return
         seen.add(current_package)
-        graph_lines.append(f'class "{current_package}" {{}}')
+        graph_lines.append(f'class "{current_package}" as {current_package.replace(":", "_").replace(".", "_")} {{}}')
         for dep in dependencies.get(current_package, []):
-            graph_lines.append(f'"{current_package}" --> "{dep}"')
+            graph_lines.append(f'"{current_package}" as {current_package.replace(":", "_").replace(".", "_")} --> "{dep}" as {dep.replace(":", "_").replace(".", "_")}')
             add_edges(dep, seen)
 
     add_edges(package_name, seen)
@@ -64,42 +64,44 @@ def generate_plantuml_graph(package_name, dependencies):
 def visualize_plantuml(plantuml_content, plantuml_path, output_file):
     """Сохраняет граф в формате PNG с помощью PlantUML."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    uml_file = os.path.join(script_dir, "temp_graph.puml")
+    temp_dir = os.path.join(script_dir, "temp")
+    os.makedirs(temp_dir, exist_ok=True)
+    uml_file = os.path.join(temp_dir, "temp_graph.puml")
 
     # Удаляем старый файл, если он существует
     if os.path.exists(uml_file):
         os.remove(uml_file)
 
-    with open(uml_file, 'w') as file:
+    with open(uml_file, 'w', encoding='utf-8') as file:
         file.write(plantuml_content)
 
     try:
         # Запуск команды PlantUML
         result = subprocess.run(
-            ["java", "-jar", plantuml_path, uml_file, "-o", script_dir],
+            ["java", "-jar", plantuml_path, uml_file, "-o", temp_dir],
             check=True, capture_output=True
         )
 
         # Вывод stdout и stderr для диагностики
-        print(f"stdout: {result.stdout.decode()}")
-        print(f"stderr: {result.stderr.decode()}")
+        print(f"stdout: {result.stdout.decode('latin1')}")
+        print(f"stderr: {result.stderr.decode('latin1')}")
 
         # Проверка на создание любого PNG-файла
         temp_png_path = None
-        for file in os.listdir(script_dir):
+        for file in os.listdir(temp_dir):
             if file.endswith(".png"):
-                temp_png_path = os.path.join(script_dir, file)
+                temp_png_path = os.path.join(temp_dir, file)
                 break
 
         if temp_png_path:
             # Переименование созданного файла в output_file
             os.rename(temp_png_path, output_file)
         else:
-            print(f"Ошибка: не удалось найти PNG файл в {script_dir}.")
+            print(f"Ошибка: не удалось найти PNG файл в {temp_dir}.")
     except subprocess.CalledProcessError as e:
         print(f"Ошибка при выполнении subprocess: {e}")
-        print(f"stdout: {e.stdout.decode()}")
-        print(f"stderr: {e.stderr.decode()}")
+        print(f"stdout: {e.stdout.decode('latin1')}")
+        print(f"stderr: {e.stderr.decode('latin1')}")
 
 
 def main():

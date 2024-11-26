@@ -1,180 +1,48 @@
 @startuml
 skinparam linetype ortho
-class "samba-common-tools" {}
-"samba-common-tools" --> "samba-libs"
-class "samba-libs" {}
-"samba-libs" --> "samba-util-libs"
-class "samba-util-libs" {}
-"samba-util-libs" --> "so:libc.musl-x86_64.so.1"
-class "so:libc.musl-x86_64.so.1" {}
-"samba-util-libs" --> "so:libgnutls.so.30"
-class "so:libgnutls.so.30" {}
-"samba-util-libs" --> "so:libicui18n.so.74"
-class "so:libicui18n.so.74" {}
-"samba-util-libs" --> "so:libicuuc.so.74"
-class "so:libicuuc.so.74" {}
-"samba-util-libs" --> "so:libtalloc.so.2"
-class "so:libtalloc.so.2" {}
-"samba-util-libs" --> "so:libtevent.so.0"
-class "so:libtevent.so.0" {}
-"samba-libs" --> "libwbclient"
-class "libwbclient" {}
-"libwbclient" --> "so:libc.musl-x86_64.so.1"
-"samba-libs" --> "so:libc.musl-x86_64.so.1"
-"samba-libs" --> "so:libcap.so.2"
-class "so:libcap.so.2" {}
-"samba-libs" --> "so:libcom-err-private-samba.so"
-class "so:libcom-err-private-samba.so" {}
-"samba-libs" --> "so:libgenrand-private-samba.so"
-class "so:libgenrand-private-samba.so" {}
-"samba-libs" --> "so:libgnutls.so.30"
-"samba-libs" --> "so:libiov-buf-private-samba.so"
-class "so:libiov-buf-private-samba.so" {}
-"samba-libs" --> "so:libjansson.so.4"
-class "so:libjansson.so.4" {}
-"samba-libs" --> "so:liblber.so.2"
-class "so:liblber.so.2" {}
-"samba-libs" --> "so:libldap.so.2"
-class "so:libldap.so.2" {}
-"samba-libs" --> "so:libldb.so.2"
-class "so:libldb.so.2" {}
-"samba-libs" --> "so:libpopt.so.0"
-class "so:libpopt.so.0" {}
-"samba-libs" --> "so:libreplace-private-samba.so"
-class "so:libreplace-private-samba.so" {}
-"samba-libs" --> "so:libsamba-debug-private-samba.so"
-class "so:libsamba-debug-private-samba.so" {}
-"samba-libs" --> "so:libsamba-util.so.0"
-class "so:libsamba-util.so.0" {}
-"samba-libs" --> "so:libsocket-blocking-private-samba.so"
-class "so:libsocket-blocking-private-samba.so" {}
-"samba-libs" --> "so:libstable-sort-private-samba.so"
-class "so:libstable-sort-private-samba.so" {}
-"samba-libs" --> "so:libsys-rw-private-samba.so"
-class "so:libsys-rw-private-samba.so" {}
-"samba-libs" --> "so:libtalloc.so.2"
-"samba-libs" --> "so:libtdb.so.1"
-class "so:libtdb.so.1" {}
-"samba-libs" --> "so:libtevent.so.0"
-"samba-libs" --> "so:libtime-basic-private-samba.so"
-class "so:libtime-basic-private-samba.so" {}
-"samba-libs" --> "so:libwbclient.so.0"
-class "so:libwbclient.so.0" {}
-"samba-libs" --> "so:libz.so.1"
-class "so:libz.so.1" {}
-"samba-common-tools" --> "so:libCHARSET3-private-samba.so"
-class "so:libCHARSET3-private-samba.so" {}
-"samba-common-tools" --> "so:libaddns-private-samba.so"
-class "so:libaddns-private-samba.so" {}
-"samba-common-tools" --> "so:libads-private-samba.so"
-class "so:libads-private-samba.so" {}
-"samba-common-tools" --> "so:libauth-private-samba.so"
-class "so:libauth-private-samba.so" {}
-"samba-common-tools" --> "so:libc.musl-x86_64.so.1"
-"samba-common-tools" --> "so:libcli-smb-common-private-samba.so"
-class "so:libcli-smb-common-private-samba.so" {}
-"samba-common-tools" --> "so:libcli-spoolss-private-samba.so"
-class "so:libcli-spoolss-private-samba.so" {}
-"samba-common-tools" --> "so:libcliauth-private-samba.so"
-class "so:libcliauth-private-samba.so" {}
-"samba-common-tools" --> "so:libcmdline-contexts-private-samba.so"
-class "so:libcmdline-contexts-private-samba.so" {}
-"samba-common-tools" --> "so:libcmdline-private-samba.so"
-class "so:libcmdline-private-samba.so" {}
-"samba-common-tools" --> "so:libcom-err-private-samba.so"
-"samba-common-tools" --> "so:libcommon-auth-private-samba.so"
-class "so:libcommon-auth-private-samba.so" {}
-"samba-common-tools" --> "so:libdbwrap-private-samba.so"
-class "so:libdbwrap-private-samba.so" {}
-"samba-common-tools" --> "so:libdcerpc-binding.so.0"
-class "so:libdcerpc-binding.so.0" {}
-"samba-common-tools" --> "so:libdcerpc-samba-private-samba.so"
-class "so:libdcerpc-samba-private-samba.so" {}
-"samba-common-tools" --> "so:libflag-mapping-private-samba.so"
-class "so:libflag-mapping-private-samba.so" {}
-"samba-common-tools" --> "so:libgenrand-private-samba.so"
-"samba-common-tools" --> "so:libgensec-private-samba.so"
-class "so:libgensec-private-samba.so" {}
-"samba-common-tools" --> "so:libgnutls.so.30"
-"samba-common-tools" --> "so:libgpo-private-samba.so"
-class "so:libgpo-private-samba.so" {}
-"samba-common-tools" --> "so:libgse-private-samba.so"
-class "so:libgse-private-samba.so" {}
-"samba-common-tools" --> "so:libgssapi-private-samba.so"
-class "so:libgssapi-private-samba.so" {}
-"samba-common-tools" --> "so:libjansson.so.4"
-"samba-common-tools" --> "so:libkrb5-private-samba.so"
-class "so:libkrb5-private-samba.so" {}
-"samba-common-tools" --> "so:libkrb5samba-private-samba.so"
-class "so:libkrb5samba-private-samba.so" {}
-"samba-common-tools" --> "so:libldap.so.2"
-"samba-common-tools" --> "so:liblibcli-lsa3-private-samba.so"
-class "so:liblibcli-lsa3-private-samba.so" {}
-"samba-common-tools" --> "so:liblibsmb-private-samba.so"
-class "so:liblibsmb-private-samba.so" {}
-"samba-common-tools" --> "so:libmsrpc3-private-samba.so"
-class "so:libmsrpc3-private-samba.so" {}
-"samba-common-tools" --> "so:libndr-krb5pac.so.0"
-class "so:libndr-krb5pac.so.0" {}
-"samba-common-tools" --> "so:libndr-samba-private-samba.so"
-class "so:libndr-samba-private-samba.so" {}
-"samba-common-tools" --> "so:libndr-standard.so.0"
-class "so:libndr-standard.so.0" {}
-"samba-common-tools" --> "so:libndr.so.4"
-class "so:libndr.so.4" {}
-"samba-common-tools" --> "so:libnetapi.so.1"
-class "so:libnetapi.so.1" {}
-"samba-common-tools" --> "so:libpopt.so.0"
-"samba-common-tools" --> "so:libprinting-migrate-private-samba.so"
-class "so:libprinting-migrate-private-samba.so" {}
-"samba-common-tools" --> "so:libreadline.so.8"
-class "so:libreadline.so.8" {}
-"samba-common-tools" --> "so:libreplace-private-samba.so"
-"samba-common-tools" --> "so:libsamba-credentials.so.1"
-class "so:libsamba-credentials.so.1" {}
-"samba-common-tools" --> "so:libsamba-debug-private-samba.so"
-"samba-common-tools" --> "so:libsamba-errors.so.1"
-class "so:libsamba-errors.so.1" {}
-"samba-common-tools" --> "so:libsamba-hostconfig.so.0"
-class "so:libsamba-hostconfig.so.0" {}
-"samba-common-tools" --> "so:libsamba-modules-private-samba.so"
-class "so:libsamba-modules-private-samba.so" {}
-"samba-common-tools" --> "so:libsamba-passdb.so.0"
-class "so:libsamba-passdb.so.0" {}
-"samba-common-tools" --> "so:libsamba-security-private-samba.so"
-class "so:libsamba-security-private-samba.so" {}
-"samba-common-tools" --> "so:libsamba-sockets-private-samba.so"
-class "so:libsamba-sockets-private-samba.so" {}
-"samba-common-tools" --> "so:libsamba-util.so.0"
-"samba-common-tools" --> "so:libsamba3-util-private-samba.so"
-class "so:libsamba3-util-private-samba.so" {}
-"samba-common-tools" --> "so:libsamdb.so.0"
-class "so:libsamdb.so.0" {}
-"samba-common-tools" --> "so:libsecrets3-private-samba.so"
-class "so:libsecrets3-private-samba.so" {}
-"samba-common-tools" --> "so:libserver-id-db-private-samba.so"
-class "so:libserver-id-db-private-samba.so" {}
-"samba-common-tools" --> "so:libserver-role-private-samba.so"
-class "so:libserver-role-private-samba.so" {}
-"samba-common-tools" --> "so:libsmbconf.so.0"
-class "so:libsmbconf.so.0" {}
-"samba-common-tools" --> "so:libsmbd-base-private-samba.so"
-class "so:libsmbd-base-private-samba.so" {}
-"samba-common-tools" --> "so:libsmbd-shim-private-samba.so"
-class "so:libsmbd-shim-private-samba.so" {}
-"samba-common-tools" --> "so:libsmbldap.so.2"
-class "so:libsmbldap.so.2" {}
-"samba-common-tools" --> "so:libtalloc.so.2"
-"samba-common-tools" --> "so:libtdb.so.1"
-"samba-common-tools" --> "so:libtevent-util.so.0"
-class "so:libtevent-util.so.0" {}
-"samba-common-tools" --> "so:libtevent.so.0"
-"samba-common-tools" --> "so:libtime-basic-private-samba.so"
-"samba-common-tools" --> "so:libtrusts-util-private-samba.so"
-class "so:libtrusts-util-private-samba.so" {}
-"samba-common-tools" --> "so:libutil-reg-private-samba.so"
-class "so:libutil-reg-private-samba.so" {}
-"samba-common-tools" --> "so:libutil-tdb-private-samba.so"
-class "so:libutil-tdb-private-samba.so" {}
-"samba-common-tools" --> "so:libwbclient.so.0"
+class "ncurses-dev" as ncurses_dev {
+}
+class "libformw" as libformw {
+}
+class "ncurses-terminfo-base" as terminfo_base {
+}
+class "so:libc.musl-x86_64.so.1" as libc {
+}
+class "so:libncursesw.so.6" as libncursesw {
+}
+ncurses_dev --> libformw
+libformw --> terminfo_base
+libformw --> libc
+libformw --> libncursesw
+class "libmenuw" as libmenuw {
+}
+ncurses_dev --> libmenuw
+libmenuw --> terminfo_base
+libmenuw --> libc
+libmenuw --> libncursesw
+class "libncurses++" as libncursespp {
+}
+ncurses_dev --> libncursespp
+libncursespp --> terminfo_base
+libncursespp --> libc
+libncursespp --> libformw
+libncursespp --> "so:libgcc_s.so.1"
+libncursespp --> "so:libmenuw.so.6"
+libncursespp --> libncursesw
+libncursespp --> "so:libpanelw.so.6"
+libncursespp --> "so:libstdc++.so.6"
+class "libncursesw" as libncursesw {
+}
+ncurses_dev --> libncursesw
+libncursesw --> terminfo_base
+libncursesw --> libc
+class "libpanelw" as libpanelw {
+}
+ncurses_dev --> libpanelw
+libpanelw --> terminfo_base
+libpanelw --> libc
+libpanelw --> libncursesw
+class "pkgconfig" as pkgconfig {
+}
+ncurses_dev --> pkgconfig
 @enduml
