@@ -35,9 +35,20 @@
 
 ## Функции и методы файла Main.py
 - parse_apkindex(apkindex_path) - парсит зависимости из файла APKINDEX.
+
+![image](https://github.com/user-attachments/assets/2fe79991-fd96-4b97-981f-bcdef91a474b)
+
 - resolve_dependencies(dependencies, package_name) - рекурсивно разрешает все транзитивные зависимости.
+
+![image](https://github.com/user-attachments/assets/5733670e-ca84-4a07-81f0-f8dddfacb74d)
+
 - generate_plantuml_graph(package_name, dependencies) - генерирует граф в формате PlantUML.
+
+![image](https://github.com/user-attachments/assets/611ad66b-16f9-4018-a05a-0b700c6b7d68)
+
 - visualize_plantuml(plantuml_content, plantuml_path, output_file) - сохраняет граф в формате PNG с помощью PlantUML.
+
+![image](https://github.com/user-attachments/assets/c4048c05-4fbb-4c6a-af4b-673ff947fa56)
 
 ## Тестирование
 Модуль тестирования содержит комплексный набор тестов для функций визуализатора зависимостей. Тесты реализованы с использованием библиотеки `unittest` на Python.
@@ -48,5 +59,4 @@
 - test_visualize_plantuml - проверяет правильность сохранения графа в формате PNG.
 - test_plantuml_jar_usage - проверяет корректность использования jar файла PlantUML.
 
-
-
+![image](https://github.com/user-attachments/assets/70871d84-cf76-45a5-bd8e-1563fb8355c3)
