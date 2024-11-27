@@ -126,5 +126,43 @@ ncurses-dev --> pkgconfig
         self.assertTrue(os.path.exists(output_file))
         os.remove(output_file)  # Удаляем созданный файл после теста
 
+    def test_plantuml_jar_usage(self):
+        dependencies = parse_apkindex(self.temp_apkindex_path)
+        plantuml_content = generate_plantuml_graph('ncurses-dev', dependencies)
+        output_file = "test_output.png"
+        # Исправленный путь к plantuml.jar
+        plantuml_jar_path = "C:\\Users\\User\\Desktop\\ДЗ_ИНФА\\Конфиг\\Config_Homework_2\\plantuml\\plantuml-lgpl-1.2024.7.jar"
+
+        # Создаем временный puml файл
+        temp_puml_path = "temp_graph.puml"
+        with open(temp_puml_path, 'w') as f:
+            f.write(plantuml_content)
+
+        try:
+            # Запуск команды PlantUML
+            result = subprocess.run(
+                ["java", "-jar", plantuml_jar_path, temp_puml_path, "-o", os.path.dirname(temp_puml_path)],
+                check=True, capture_output=True
+            )
+
+            # Проверка на создание PNG файла
+            temp_png_path = None
+            for file in os.listdir(os.path.dirname(temp_puml_path)):
+                if file.endswith(".png"):
+                    temp_png_path = os.path.join(os.path.dirname(temp_puml_path), file)
+                    break
+
+            self.assertIsNotNone(temp_png_path, "PNG файл не был создан")
+            self.assertTrue(os.path.exists(temp_png_path), "PNG файл не существует")
+
+        except subprocess.CalledProcessError as e:
+            self.fail(f"Ошибка при выполнении subprocess: {e}")
+        finally:
+            # Удаляем временные файлы
+            if os.path.exists(temp_puml_path):
+                os.remove(temp_puml_path)
+            if temp_png_path and os.path.exists(temp_png_path):
+                os.remove(temp_png_path)
+
 if __name__ == "__main__":
     unittest.main()
