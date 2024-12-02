@@ -1,0 +1,46 @@
+@startuml
+
+digraph world {
+size="7,7";
+rankdir=LR;
+splines=ortho;
+ranksep=1.5;
+nodesep=0.5;
+
+	{rank=same; ncurses_dev libformw libmenuw libncursespp libncursesw libpanelw pkgconfig;}
+	{rank=same; terminfo_base libc "so:libgcc_s.so.1" "so:libstdc++.so.6";}
+	{rank=same; "so:libncursesw.so.6" "so:libmenuw.so.6" "so:libpanelw.so.6";}
+
+	ncurses_dev -> libformw;
+	ncurses_dev -> libmenuw;
+	ncurses_dev -> libncursespp;
+	ncurses_dev -> libncursesw;
+	ncurses_dev -> libpanelw;
+	ncurses_dev -> pkgconfig;
+
+	libformw -> terminfo_base;
+	libformw -> libc;
+	libformw -> "so:libncursesw.so.6";
+
+	libmenuw -> terminfo_base;
+	libmenuw -> libc;
+	libmenuw -> "so:libncursesw.so.6";
+
+	libncursespp -> terminfo_base;
+	libncursespp -> libc;
+	libncursespp -> libformw;
+	libncursespp -> "so:libgcc_s.so.1";
+	libncursespp -> "so:libmenuw.so.6";
+	libncursespp -> "so:libncursesw.so.6";
+	libncursespp -> "so:libpanelw.so.6";
+	libncursespp -> "so:libstdc++.so.6";
+
+	libncursesw -> terminfo_base;
+	libncursesw -> libc;
+
+	libpanelw -> terminfo_base;
+	libpanelw -> libc;
+	libpanelw -> "so:libncursesw.so.6";
+}
+
+@enduml
