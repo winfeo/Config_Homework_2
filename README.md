@@ -50,7 +50,7 @@
 
 ![image](https://github.com/user-attachments/assets/c4048c05-4fbb-4c6a-af4b-673ff947fa56)
 
-##Граф зависимостей
+## Граф зависимостей
 Результат выполнения программы, итоговый png файл.
 
 ![image](https://github.com/user-attachments/assets/2212e8be-5e26-453a-bd24-3efcb3833713)
